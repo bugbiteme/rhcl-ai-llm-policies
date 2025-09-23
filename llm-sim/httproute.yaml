@@ -1,0 +1,19 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: trlp-tutorial-llm-sim
+spec:
+  hostnames:
+    # modify for your own domain
+    - trlp-tutorial.globex.sandbox2765.opentlc.com
+  parentRefs:
+    - name: trlp-tutorial-gateway
+      namespace: gateway-system
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: "/"
+      backendRefs:
+        - name: trlp-tutorial-llm-sim
+          port: 80
