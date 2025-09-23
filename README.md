@@ -4,10 +4,10 @@ Red Hat Connectivity Link Token-based Rate Limiting for Large Language Model API
 Assumptions: You have all the RHCL operators installed and are running a Kuadrant System
 
 Kuadrant `TokenRateLimitPolicy` tutorial blog (`dev`):
-https://docs.kuadrant.io/dev/kuadrant-operator/doc/user-guides/tokenratelimitpolicy/authenticated-token-ratelimiting-tutorial/
+- https://docs.kuadrant.io/dev/kuadrant-operator/doc/user-guides/tokenratelimitpolicy/authenticated-token-ratelimiting-tutorial/
 
 llm simulator image used in this tutorial:
-https://github.com/llm-d/llm-d-inference-sim/pkgs/container/llm-d-inference-sim
+- https://github.com/llm-d/llm-d-inference-sim/pkgs/container/llm-d-inference-sim
 
 ```sh
 export KUADRANT_GATEWAY_NS=gateway-system
