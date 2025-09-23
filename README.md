@@ -15,7 +15,7 @@ export KUADRANT_GATEWAY_NAME=trlp-tutorial-gateway
 export KUADRANT_SYSTEM_NS=$(kubectl get kuadrant -A -o jsonpath='{.items[0].metadata.namespace}')
 ```
 Create Gateway (Gateway API):
-- Note you will need to update the host in `gateway.yaml` first
+- Note you will need to update the `hostname` in `gateway.yaml` first
 ```sh
 oc apply -k gateway  
 ```
