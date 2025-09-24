@@ -9,4 +9,5 @@ resources:
 
 # applied in `gateway-system` namespace
 - authpolicy.yaml
+# - trlpolicy.yaml
 
