@@ -3,6 +3,6 @@ kind: Kustomization
 resources:
 - namespace.yaml
 - gateway.yaml
-- wasm-plugin-pull-secret.yaml
+- wasm-pull-secret.yaml
 
 namespace: gateway-system
