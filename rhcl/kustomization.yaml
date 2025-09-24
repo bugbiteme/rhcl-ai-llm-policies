@@ -1,0 +1,12 @@
+kind: Kustomization
+apiVersion: kustomize.config.k8s.io/v1beta1
+
+resources:
+#for testing purposes only
+
+# applied in `kuadrant-system` namespace
+- secrets.yaml
+
+# applied in `gateway-system` namespace
+- authpolicy.yaml
+

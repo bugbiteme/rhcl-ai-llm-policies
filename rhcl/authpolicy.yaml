@@ -1,0 +1,36 @@
+apiVersion: kuadrant.io/v1
+kind: AuthPolicy
+metadata:
+  name: trlp-tutorial-llm-api-keys
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: Gateway
+    name: trlp-tutorial-gateway
+  rules:
+    authentication:
+      api-key-users:
+        apiKey:
+          selector:
+            matchLabels:
+              app: my-llm
+        credentials:
+          authorizationHeader:
+            prefix: APIKEY
+    response:
+      success:
+        filters:
+          identity:
+            json:
+              properties:
+                groups:
+                  selector: auth.identity.metadata.annotations.kuadrant\.io/groups
+                userid:
+                  selector: auth.identity.metadata.annotations.secret\.kuadrant\.io/user-id
+    authorization:
+      allow-groups:
+        opa:
+          rego: |
+            groups := split(object.get(input.auth.identity.metadata.annotations, "kuadrant.io/groups", ""), ",")
+            allow { groups[_] == "free" }
+            allow { groups[_] == "gold" }

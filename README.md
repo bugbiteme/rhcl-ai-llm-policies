@@ -14,7 +14,8 @@ export KUADRANT_GATEWAY_NS=gateway-system
 export KUADRANT_GATEWAY_NAME=trlp-tutorial-gateway
 export KUADRANT_SYSTEM_NS=$(kubectl get kuadrant -A -o jsonpath='{.items[0].metadata.namespace}')
 ```
-Create Gateway (Gateway API):
+## Create Gateway (Gateway API):
+
 - Note you will need to update the `hostname` in `gateway.yaml` first
 ```sh
 oc apply -k gateway  
@@ -26,7 +27,8 @@ Deploy llm-sim:
 oc apply -k llm-sim     
 ```
 
-Export the gateway URL for use in requests:
+## Export the gateway URL for use in requests:
+
 ```sh
 export KUADRANT_INGRESS_HOST=$(kubectl get gtw ${KUADRANT_GATEWAY_NAME} -n ${KUADRANT_GATEWAY_NS} -o jsonpath='{.status.addresses[0].value}')
 export KUADRANT_INGRESS_PORT=$(kubectl get gtw ${KUADRANT_GATEWAY_NAME} -n ${KUADRANT_GATEWAY_NS} -o jsonpath='{.spec.listeners[?(@.name=="http")].port}')
@@ -34,10 +36,12 @@ export KUADRANT_GATEWAY_URL=${KUADRANT_INGRESS_HOST}:${KUADRANT_INGRESS_PORT}
 export LLM_HOSTNAME=$(oc -n llm-sim get httproute trlp-tutorial-llm-sim -o jsonpath='{.spec.hostnames[0]}{"\n"}')
 ```
 
-Test connection:
+## Test connection:
+
 ```sh
 curl -H "Host: ${LLM_HOSTNAME}" http://$KUADRANT_GATEWAY_URL/v1/models -i
 ```
+
 Expected output:
 ```json
 HTTP/1.1 200 OK
@@ -71,7 +75,7 @@ curl -H "Host: ${LLM_HOSTNAME}" http://$KUADRANT_GATEWAY_URL/v1/models | jq
 }
 ```
 
-Lets test the llm with a prompt!
+## Lets test the llm with a prompt!
 ```sh
 curl -H "Host: ${LLM_HOSTNAME}" \
      -H "Authorization: APIKEY iamafreeuser" \
@@ -117,4 +121,76 @@ Example response (keep in mind that these are probably hard-coded per `llm-sim`)
     }
   ]
 }
+```
+
+## Applying RHCL Policies
+
+For the purpose of this demo, rather than applying all the policies at once, let's apply resources one at a time
+
+### Create Secrets
+These are our moc users and API keys that give them different levels of service to our LLM
+
+```yaml
+api_key: iamafreeuser
+api_key: iamagolduser
+```
+
+```sh
+oc apply -f rhcl/secrets.yaml -n kuadrant-system  
+```
+
+### Apply AuthPolicy 
+
+You can follow Authorino Operator logs while testing
+
+```sh
+oc -n kuadrant-system logs deploy/authorino -f
+```
+
+The below willl be applied on the Gateway and will only allow users with the `APIKEY` containing one of the two set 
+API Keys set in the secrets for `gold` and `free` user groups.
+
+```sh
+oc apply -f rhcl/authpolicy.yaml -n gateway-system 
+```
+
+Test Auth Policy
+
+- Without APIKEY Headers
+
+```sh
+curl -v -H "Host: ${LLM_HOSTNAME}" \
+  -H "Content-Type: application/json" \
+  -X POST "http://${KUADRANT_GATEWAY_URL}/v1/chat/completions" \
+  -d '{"model":"meta-llama/Llama-3.1-8B-Instruct","messages":[{"role":"user","content":"What is OpenShift?"}],"max_tokens":100,"stream":false,"usage":true}'
+```
+
+Output:
+```
+...
+< HTTP/1.1 401 Unauthorized
+< www-authenticate: APIKEY realm="api-key-users"
+< x-ext-auth-reason: credential not found
+```
+
+- Using APIKEY headers
+
+```
+-H "Authorization: APIKEY iamafreeuser"
+```
+
+```sh
+curl -v -H "Host: ${LLM_HOSTNAME}" \
+  -H "Authorization: APIKEY iamafreeuser" \
+  -H "Content-Type: application/json" \
+  -X POST "http://${KUADRANT_GATEWAY_URL}/v1/chat/completions" \
+  -d '{"model":"meta-llama/Llama-3.1-8B-Instruct","messages":[{"role":"user","content":"What is OpenShift?"}],"max_tokens":100,"stream":false,"usage":true}'
+```
+
+Output:
+
+```
+...
+< HTTP/1.1 200 OK
+...
 ```
