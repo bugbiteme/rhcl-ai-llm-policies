@@ -1,6 +1,7 @@
 apiVersion: kuadrant.io/v1
 kind: AuthPolicy
 metadata:
+  namespace: gateway-system 
   name: trlp-tutorial-llm-api-keys
 spec:
   targetRef:

@@ -1,0 +1,16 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: llm-rhcl
+  namespace: openshift-gitops
+spec:
+  destination:
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: rhcl
+    repoURL: https://github.com/bugbiteme/rhcl-ai-llm-policies
+    targetRevision: HEAD
+  syncPolicy:
+    automated:
+      enabled: true
